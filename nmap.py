@@ -40,7 +40,7 @@ for port in range(1,max+1,1):
     try:
         Thread(target=check_ip, args=(host,port)).start()
         i=int(100/max*port)
-        stdout.write("\r[%-50s] %d%%" % ('='*int(i/2), i))
+        stdout.write("\r[%-25s] %d%%" % ('='*int(i/4), i))
         stdout.flush()
         sleep(0.001)
     except KeyboardInterrupt:
