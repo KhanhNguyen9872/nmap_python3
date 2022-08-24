@@ -1,20 +1,18 @@
 from time import sleep
 from threading import Thread
-from os import name
-from os import system
+from os import kill
+from os import getpid
+from signal import SIGKILL
 import socket
 from sys import stdout
-global open
+global open, pid
 open=[]
 max=0
 timeout=999
+pid = getpid()
 def kill_process():
     print("\nClosing process....")
-    if (name == 'nt'):
-        system("taskkill /f /im python.exe >null 2>&1")
-    else:
-        system("kill -9 $(pgrep python3) >/dev/null 2>&1")
-        system("killall python3 >/dev/null 2>&1")
+    kill(pid, SIGKILL)
     exit()
 def check_ip(host,port):
     s = socket.socket()
