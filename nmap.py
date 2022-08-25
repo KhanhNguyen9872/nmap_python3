@@ -6,6 +6,7 @@ from sys import stdout
 import socket, signal
 global open, pid
 open=[]
+min=0
 max=0
 timeout=999
 pid = getpid()
@@ -17,8 +18,8 @@ def kill_process():
         kill(pid, signal.SIGABRT)
     exit()
 def check_ip(host,port):
-    s = socket.socket()
     try:
+        s = socket.socket()
         s.connect((host, int(port)))
     except:
         pass
@@ -26,13 +27,21 @@ def check_ip(host,port):
         s.close()
         open.append(f"{port}")
 host=str(input("IP: ")).replace("https://","").replace("http://","").split("/")
-while (max < 1) or (max > 65535):
+while (min < 1) or (min > 65535):
+    try:
+        min=int(input("Min port: "))
+    except KeyboardInterrupt:
+        kill_process()
+    except:
+        print("\n Integer number [1-65535]\n First port while scanning\n")
+        min=0
+while (max < min) or (max > 65535):
     try:
         max=int(input("Max port: "))
     except KeyboardInterrupt:
         kill_process()
     except:
-        print("\n Integer number [1-65535]\n Large port can take quite a while\n")
+        print("\n Integer number [1-65535]\n Last port while scanning\n Large port can take quite a while\n")
         max=0
 while (timeout < 0) or (timeout > 10):
     try:
@@ -42,11 +51,11 @@ while (timeout < 0) or (timeout > 10):
     except:
         print("\n Float number [0-10] (Default: 0.002)\n Short time may cause the device to lag\n")
         timeout=999
-print("\nScanning...")
-for port in range(1,max+1,1):
+print(f"\nScanning.... [{min}-{max}]")
+for port in range(min,max+1,1):
     try:
         Thread(target=check_ip, args=(host[0],port)).start()
-        i=int(100/max*port)
+        i=int((100/(max-min))*(port-min))
         stdout.write("\r[%-25s] %d%%" % ('='*int(i/4), i))
         stdout.flush()
         sleep(timeout)
