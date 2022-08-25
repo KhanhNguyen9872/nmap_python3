@@ -2,9 +2,8 @@ from time import sleep
 from threading import Thread
 from os import kill
 from os import getpid
-from signal import SIGKILL
-import socket
 from sys import stdout
+import socket, signal
 global open, pid
 open=[]
 max=0
@@ -12,7 +11,10 @@ timeout=999
 pid = getpid()
 def kill_process():
     print("\nClosing process....")
-    kill(pid, SIGKILL)
+    if hasattr(signal, 'SIGKILL'):
+        kill(pid, signal.SIGKILL)
+    else:
+        kill(pid, signal.SIGABRT)
     exit()
 def check_ip(host,port):
     s = socket.socket()
@@ -23,7 +25,7 @@ def check_ip(host,port):
     else:
         s.close()
         open.append(f"{port}")
-host=str(input("IP: "))
+host=str(input("IP: ")).replace("https://","").replace("http://","").split("/")
 while (max < 1) or (max > 65535):
     try:
         max=int(input("Max port: "))
@@ -43,7 +45,7 @@ while (timeout < 0) or (timeout > 10):
 print("\nScanning...")
 for port in range(1,max+1,1):
     try:
-        Thread(target=check_ip, args=(host,port)).start()
+        Thread(target=check_ip, args=(host[0],port)).start()
         i=int(100/max*port)
         stdout.write("\r[%-25s] %d%%" % ('='*int(i/4), i))
         stdout.flush()
@@ -51,7 +53,7 @@ for port in range(1,max+1,1):
     except KeyboardInterrupt:
         kill_process()
 print("\nScan complete!")
-sleep(6)
+sleep(5)
 open = str(", ".join(open))
 print(f"\nPort open: {open}")
 kill_process()
