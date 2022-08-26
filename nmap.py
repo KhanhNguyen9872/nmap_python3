@@ -57,6 +57,10 @@ try:
     host=str(input(f"{bcolors.YELLOW}IP: {bcolors.GREEN}")).replace("https://","").replace("http://","").split("/")
 except KeyboardInterrupt:
     kill_process()
+try:
+    host=str(socket.gethostbyname(host[0]))
+except:
+    host=str(host[0])
 while (min < 1) or (min > 65535):
     try:
         min=int(input(f"{bcolors.YELLOW}Min port: {bcolors.GREEN}"))
@@ -86,22 +90,22 @@ while (timeout < 0) or (timeout > 10):
     except:
         print(f"\n{bcolors.CYAN} Float number [0-10] (Default: 0.001)\n Short time may cause the device to lag\n{bcolors.ENDC}")
         timeout=999
-print(f"\n{bcolors.GREEN}Scanning.... [{min}-{max}]{bcolors.ENDC}")
+print(f"\n{bcolors.GREEN}Scanning... ({bcolors.BLUE}{host}{bcolors.GREEN}) [{bcolors.CYAN}{min}{bcolors.GREEN}-{bcolors.CYAN}{max}{bcolors.GREEN}]{bcolors.ENDC}")
 for port in range(min,max+1,1):
     try:
-        Thread(target=check_ip, args=(host[0],port)).start()
+        Thread(target=check_ip, args=(host,port)).start()
         i=int((100/(max-min))*(port-min))
-        stdout.write(f"\r[%-25s] %d%% ({port})" % ('='*int(i/4), i))
+        stdout.write(f"\r[%-25s] %d%% ({bcolors.YELLOW}{port}{bcolors.ENDC})" % ('='*int(i/4), i))
         stdout.flush()
         sleep(timeout)
     except RuntimeError as e:
         print(f"{bcolors.RED}\n\nERROR: {e} at {port}")
-        print(f"You can try min and max port:\n Min: 1, Max: {port-6}\n Min: 1000, Max: {port-6+1000}\n Min: 3000, Max: {port-6+3000}")
+        print(f"{bcolors.YELLOW}You can try min and max port:\n Min: 1, Max: {port-6}\n Min: 1000, Max: {port-6+1000}\n Min: 3000, Max: {port-6+3000}{bcolors.ENDC}")
         kill_process()
     except KeyboardInterrupt:
         kill_process()
-print(f"\n{bcolors.GREEN}Scan complete!{bcolors.ENDC}")
+print(f"\n{bcolors.GREEN}Waiting for the process complete...{bcolors.ENDC}")
 sleep(5)
 open = str("\n".join(open))
-print(f"\n{bcolors.CYAN}Port open: \n{bcolors.YELLOW}{open}{bcolors.ENDC}")
+print(f"\n{bcolors.CYAN}Port open from ({bcolors.BLUE}{host}{bcolors.CYAN}): \n{bcolors.YELLOW}{open}{bcolors.ENDC}")
 kill_process()
