@@ -38,8 +38,10 @@ def check_ip(host,port):
         except KeyError:
             temp="unknown"
         open.append(f"{bcolors.YELLOW}{port}    {bcolors.BLUE}{temp}{bcolors.ENDC}")
-
-host=str(input(f"{bcolors.YELLOW}IP: {bcolors.GREEN}")).replace("https://","").replace("http://","").split("/")
+try:
+    host=str(input(f"{bcolors.YELLOW}IP: {bcolors.GREEN}")).replace("https://","").replace("http://","").split("/")
+except KeyboardInterrupt:
+    kill_process()
 while (min < 1) or (min > 65535):
     try:
         min=int(input(f"{bcolors.YELLOW}Min port: {bcolors.GREEN}"))
@@ -56,13 +58,15 @@ while (max < min) or (max > 65535):
     except:
         print(f"\n{bcolors.CYAN} Integer number [1-65535]\n Last port while scanning\n Large port can take quite a while\n{bcolors.ENDC}")
         max=0
+if (min == max):
+    max+=1
 while (timeout < 0) or (timeout > 10):
     try:
-        timeout=float(input(f"{bcolors.YELLOW}Time port (Default: 0.001): {bcolors.GREEN}"))
+        timeout=float(input(f"{bcolors.YELLOW}Time port (Default: 0): {bcolors.GREEN}"))
     except KeyboardInterrupt:
         kill_process()
     except:
-        print(f"\n{bcolors.CYAN} Float number [0-10] (Default: 0.001)\n Short time may cause the device to lag\n{bcolors.ENDC}")
+        print(f"\n{bcolors.CYAN} Float number [0-10] (Default: 0)\n Short time may cause the device to lag\n{bcolors.ENDC}")
         timeout=999
 print(f"\n{bcolors.GREEN}Scanning.... [{min}-{max}]{bcolors.ENDC}")
 for port in range(min,max+1,1):
@@ -74,7 +78,7 @@ for port in range(min,max+1,1):
         sleep(timeout)
     except RuntimeError as e:
         print(f"{bcolors.RED}\n\nERROR: {e} at {port}")
-        print(f"You can try min and max port:\n Min: 1, Max: {port-1}\n Min: 1000, Max: {port-1+1000}\n Min: 3000, Max: {port-1+3000}")
+        print(f"You can try min and max port:\n Min: 1, Max: {port-6}\n Min: 1000, Max: {port-6+1000}\n Min: 3000, Max: {port-6+3000}")
         kill_process()
     except KeyboardInterrupt:
         kill_process()
