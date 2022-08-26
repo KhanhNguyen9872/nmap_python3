@@ -65,11 +65,11 @@ if (min == max):
         max+=1
 while (timeout < 0) or (timeout > 10):
     try:
-        timeout=float(input(f"{bcolors.YELLOW}Time port (Default: 0): {bcolors.GREEN}"))
+        timeout=float(input(f"{bcolors.YELLOW}Time port (Default: 0.001): {bcolors.GREEN}"))
     except KeyboardInterrupt:
         kill_process()
     except:
-        print(f"\n{bcolors.CYAN} Float number [0-10] (Default: 0)\n Short time may cause the device to lag\n{bcolors.ENDC}")
+        print(f"\n{bcolors.CYAN} Float number [0-10] (Default: 0.001)\n Short time may cause the device to lag\n{bcolors.ENDC}")
         timeout=999
 print(f"\n{bcolors.GREEN}Scanning.... [{min}-{max}]{bcolors.ENDC}")
 for port in range(min,max+1,1):
