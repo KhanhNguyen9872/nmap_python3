@@ -59,7 +59,10 @@ while (max < min) or (max > 65535):
         print(f"\n{bcolors.CYAN} Integer number [1-65535]\n Last port while scanning\n Large port can take quite a while\n{bcolors.ENDC}")
         max=0
 if (min == max):
-    max+=1
+    if (max == 65535):
+        min-=1
+    else:
+        max+=1
 while (timeout < 0) or (timeout > 10):
     try:
         timeout=float(input(f"{bcolors.YELLOW}Time port (Default: 0): {bcolors.GREEN}"))
