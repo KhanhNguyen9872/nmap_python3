@@ -3,8 +3,7 @@ from threading import Thread
 from os import kill
 from os import getpid
 from sys import stdout
-import socket, signal
-temp=""
+import socket, signal, re
 while True:
     print(f"Use color? [Y/n]: ", end="")
     temp=str(input())
@@ -33,6 +32,10 @@ min=0
 max=0
 timeout=999
 pid = getpid()
+def atoi(text):
+    return int(text) if text.isdigit() else text
+def natural_keys(text):
+    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 def kill_process():
     print(f"\n{bcolors.RED}Closing process....{bcolors.ENDC}")
     if hasattr(signal, 'SIGKILL'):
@@ -40,10 +43,17 @@ def kill_process():
     else:
         kill(pid, signal.SIGABRT)
     exit()
-def check_ip(host,port):
+def check_ip(host,port,type_port):
     try:
-        s = socket.socket()
-        s.connect((host, int(port)))
+        if (type_port == "TCP"):
+            s = socket.socket()
+            s.connect((host, int(port)))
+        elif (type_port == "UDP"):
+            MESSAGE = "khanh"
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            s.sendto(MESSAGE, (host, port))
+            s.settimeout(1)
+            print((s.recvfrom(1024)))
     except:
         pass
     else:
@@ -52,60 +62,81 @@ def check_ip(host,port):
             temp=str(info_port[port])
         except KeyError:
             temp="unknown"
-        open.append(f"{bcolors.YELLOW}{port}    {bcolors.BLUE}{temp}{bcolors.ENDC}")
-try:
-    host=str(input(f"{bcolors.YELLOW}IP: {bcolors.GREEN}")).replace("https://","").replace("http://","").split("/")
-except KeyboardInterrupt:
-    kill_process()
-try:
-    host=str(socket.gethostbyname(host[0]))
-except:
-    host=str(host[0])
-while (min < 1) or (min > 65535):
-    try:
-        min=int(input(f"{bcolors.YELLOW}Min port: {bcolors.GREEN}"))
-    except KeyboardInterrupt:
-        kill_process()
-    except:
-        print(f"\n{bcolors.CYAN} Integer number [1-65535]\n First port while scanning\n{bcolors.ENDC}")
-        min=0
-while (max < min) or (max > 65535):
-    try:
-        max=int(input(f"{bcolors.YELLOW}Max port: {bcolors.GREEN}"))
-    except KeyboardInterrupt:
-        kill_process()
-    except:
-        print(f"\n{bcolors.CYAN} Integer number [1-65535]\n Last port while scanning\n Large port can take quite a while\n{bcolors.ENDC}")
-        max=0
-if (min == max):
-    if (max == 65535):
-        min-=1
+        open.append(f"{port}    {temp}")
+def main(host,min,max,timeout,type_port):
+    print(f"\n{bcolors.GREEN}Scanning {type_port}... ({bcolors.BLUE}{host}{bcolors.GREEN}) [{bcolors.CYAN}{min}{bcolors.GREEN}-{bcolors.CYAN}{max}{bcolors.GREEN}]{bcolors.ENDC}")
+    for port in range(min,max+1,1):
+        try:
+            Thread(target=check_ip, args=(host,port,type_port)).start()
+            i=int((100/(max-min))*(port-min))
+            stdout.write(f"\r[%-25s] %d%% ({bcolors.YELLOW}{port}{bcolors.ENDC})" % ('='*int(i/4), i))
+            stdout.flush()
+            sleep(timeout)
+        except RuntimeError as e:
+            print(f"{bcolors.RED}\n\nERROR: {e} at {port}")
+            print(f"{bcolors.YELLOW}You can try min and max port:\n Min: 1, Max: {port-6}\n Min: 1000, Max: {port-6+1000}\n Min: 3000, Max: {port-6+3000}{bcolors.ENDC}")
+            kill_process()
+        except KeyboardInterrupt:
+            kill_process()
+    print(f"\n{bcolors.GREEN}Waiting for the process complete (10s)...{bcolors.ENDC}")
+    sleep(10)
+    open.sort(key=natural_keys)
+    if (open == []):
+        print(f"\n{bcolors.RED}There are no port {type_port} open from ({bcolors.BLUE}{host}{bcolors.RED})")
     else:
-        max+=1
-while (timeout < 0) or (timeout > 10):
+        print(f"\n{bcolors.CYAN}Port {type_port} open from ({bcolors.BLUE}{host}{bcolors.CYAN}):{bcolors.YELLOW}")
+        for i in open:
+            temp=i.split()
+            print(f"{bcolors.YELLOW}{temp[0]}/{type_port.lower()}   {bcolors.BLUE}{temp[1]}{bcolors.ENDC}")
+    print(bcolors.ENDC,end="")
+    kill_process()
+if (__name__ == "__main__"):
     try:
-        timeout=float(input(f"{bcolors.YELLOW}Time port (Default: 0.001): {bcolors.GREEN}"))
+        host=str(input(f"{bcolors.YELLOW}IP: {bcolors.GREEN}")).replace("https://","").replace("http://","").split("/")
     except KeyboardInterrupt:
         kill_process()
+    try:
+        host=str(socket.gethostbyname(host[0]))
     except:
-        print(f"\n{bcolors.CYAN} Float number [0-10] (Default: 0.001)\n Short time may cause the device to lag\n{bcolors.ENDC}")
-        timeout=999
-print(f"\n{bcolors.GREEN}Scanning... ({bcolors.BLUE}{host}{bcolors.GREEN}) [{bcolors.CYAN}{min}{bcolors.GREEN}-{bcolors.CYAN}{max}{bcolors.GREEN}]{bcolors.ENDC}")
-for port in range(min,max+1,1):
-    try:
-        Thread(target=check_ip, args=(host,port)).start()
-        i=int((100/(max-min))*(port-min))
-        stdout.write(f"\r[%-25s] %d%% ({bcolors.YELLOW}{port}{bcolors.ENDC})" % ('='*int(i/4), i))
-        stdout.flush()
-        sleep(timeout)
-    except RuntimeError as e:
-        print(f"{bcolors.RED}\n\nERROR: {e} at {port}")
-        print(f"{bcolors.YELLOW}You can try min and max port:\n Min: 1, Max: {port-6}\n Min: 1000, Max: {port-6+1000}\n Min: 3000, Max: {port-6+3000}{bcolors.ENDC}")
-        kill_process()
-    except KeyboardInterrupt:
-        kill_process()
-print(f"\n{bcolors.GREEN}Waiting for the process complete...{bcolors.ENDC}")
-sleep(5)
-open = str("\n".join(open))
-print(f"\n{bcolors.CYAN}Port open from ({bcolors.BLUE}{host}{bcolors.CYAN}): \n{bcolors.YELLOW}{open}{bcolors.ENDC}")
-kill_process()
+        host=str(host[0])
+    while (min < 1) or (min > 65535):
+        try:
+            min=int(input(f"{bcolors.YELLOW}Min port: {bcolors.GREEN}"))
+        except KeyboardInterrupt:
+            kill_process()
+        except:
+            print(f"\n{bcolors.CYAN} Integer number [1-65535]\n First port while scanning\n{bcolors.ENDC}")
+            min=0
+    while (max < min) or (max > 65535):
+        try:
+            max=int(input(f"{bcolors.YELLOW}Max port: {bcolors.GREEN}"))
+        except KeyboardInterrupt:
+            kill_process()
+        except:
+            print(f"\n{bcolors.CYAN} Integer number [1-65535]\n Last port while scanning\n Large port can take quite a while\n{bcolors.ENDC}")
+            max=0
+    if (min == max):
+        if (max == 65535):
+            min-=1
+        else:
+            max+=1
+    while (timeout < 0.001) or (timeout > 1):
+        try:
+            timeout=float(input(f"{bcolors.YELLOW}Time port (Default: 0.001): {bcolors.GREEN}"))
+        except KeyboardInterrupt:
+            kill_process()
+        except:
+            print(f"\n{bcolors.CYAN} Float number [0.001-1] (Default: 0.001)\n Short time may cause the device to lag\n{bcolors.ENDC}")
+            timeout=999
+    while 1:
+        try:
+            type_port=int(input(f"\n{bcolors.CYAN}Type scan:\n{bcolors.BLUE}1. TCP\n2. UDP\n{bcolors.YELLOW}Choose: {bcolors.GREEN}"))
+            if (type_port==1):
+                type_port="TCP"
+                break
+            elif (type_port==2):
+                type_port="UDP"
+                break
+        except KeyboardInterrupt:
+            kill_process()
+    main(host,min,max,timeout,type_port)
