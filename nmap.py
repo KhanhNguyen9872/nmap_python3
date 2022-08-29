@@ -1,12 +1,14 @@
-from time import sleep
-from threading import Thread
-from os import kill, getpid
-from sys import stdout
-import socket, signal, re
+#!/bin/python3
 def atoi(text):
     return int(text) if text.isdigit() else text
 def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+def getServiceName(port, proto):
+    try:
+        name = socket.getservbyport(int(port), proto)
+    except:
+        return None
+    return name
 def kill_process():
     print(f"\n{bcolors.RED}Closing process....{bcolors.ENDC}")
     if hasattr(signal, 'SIGKILL'):
@@ -20,11 +22,17 @@ def check_ip(host,port,type_port):
             s = socket.socket()
             s.connect((host, int(port)))
         elif (type_port == "UDP"):
-            MESSAGE = "khanh"
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-            s.sendto(MESSAGE, (host, port))
-            s.settimeout(1)
-            print((s.recvfrom(1024)))
+            s.sendto("Khanh".encode('utf_8'), (host, port))
+            s.settimeout(2)
+            s.recvfrom(1024)
+    except TimeoutError:
+        serv = getServiceName(port, type_port)
+        if not serv:
+            pass
+        else:
+            s.close()
+            open.append(f"{port}    {serv}")
     except:
         pass
     else:
@@ -62,6 +70,11 @@ def main(host,min,max,timeout,type_port):
     print(bcolors.ENDC,end="")
     kill_process()
 if (__name__ == "__main__"):
+    from time import sleep
+    from threading import Thread
+    from os import kill, getpid
+    from sys import stdout
+    import socket, signal, re
     while True:
         print(f"Use color? [Y/n]: ", end="")
         temp=str(input())
