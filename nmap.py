@@ -132,13 +132,13 @@ if (__name__ == "__main__"):
             min-=1
         else:
             max+=1
-    while (timeout < 0.0001) or (timeout > 1):
+    while (timeout < 0) or (timeout > 5):
         try:
             timeout=float(input(f"{bcolors.YELLOW}Time port (Default: 0.001): {bcolors.GREEN}"))
         except KeyboardInterrupt:
             kill_process()
         except:
-            print(f"\n{bcolors.CYAN} Float number [0.0001-1] (Default: 0.001)\n Short time may cause the device to lag\n{bcolors.ENDC}")
+            print(f"\n{bcolors.CYAN} Float number [0-5] (Default: 0.001)\n Short time may cause the device to lag\n{bcolors.ENDC}")
             timeout=999
     while 1:
         try:
