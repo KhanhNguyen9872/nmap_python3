@@ -20,6 +20,7 @@ def check_ip(host,port,type_port):
     try:
         if (type_port == "TCP"):
             s = socket.socket()
+            s.settimeout(4)
             s.connect((host, int(port)))
         elif (type_port == "UDP"):
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -27,12 +28,13 @@ def check_ip(host,port,type_port):
             s.settimeout(2)
             s.recvfrom(1024)
     except TimeoutError:
-        serv = getServiceName(port, type_port)
-        if not serv:
-            pass
-        else:
-            s.close()
-            open.append(f"{port}    {serv}")
+        if (type_port == "UDP"):
+            serv = getServiceName(port, type_port)
+            if not serv:
+                pass
+            else:
+                s.close()
+                open.append(f"{port}    {serv}")
     except:
         pass
     else:
@@ -56,7 +58,7 @@ def main(host,min,max,timeout,type_port):
             print(f"{bcolors.YELLOW}You can try min and max port:\n Min: 1, Max: {port-6}\n Min: 1000, Max: {port-6+1000}\n Min: 3000, Max: {port-6+3000}{bcolors.ENDC}")
             kill_process()
         except KeyboardInterrupt:
-            kill_process()
+            break
     print(f"\n{bcolors.GREEN}Waiting for the process complete (10s)...{bcolors.ENDC}")
     sleep(10)
     open.sort(key=natural_keys)
